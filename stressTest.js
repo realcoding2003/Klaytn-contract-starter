@@ -74,8 +74,17 @@ async function randomHashStorageTest() {
     while (true) {
         const message = generateRandomString(32);
         const key = generateRandomString(16);
-        console.log(`\n-----------------------------------------------------\nIteration ${i}: Storing hash for message "${message}" and key "${key}"`);
-        await storeHash(message, key);
+        console.log(`\n-----------------------------------------------------\n반복 ${i}: 메시지 "${message}"와 키 "${key}"에 대한 해시 저장 중`);
+
+        try {
+            await Promise.race([
+                storeHash(message, key),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('타임아웃')), 3000))
+            ]);
+        } catch (error) {
+            console.error(`반복 ${i} 중 오류 발생: ${error.message}`);
+        }
+
         i++;
     }
 }
