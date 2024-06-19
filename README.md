@@ -1,6 +1,8 @@
-# 클레이튼(Klaytn) 메시지 저장 및 검증 스마트 컨트랙트 개발
+# 클레이튼(Klaytn) 메시지 저장/검증 스마트 컨트랙트 개발 예제 프로젝트
 
-이 프로젝트는 Klaytn 블록체인에서 비밀번호와 블록 해시를 사용하여 메시지를 저장하고 검증할 수 있는 스마트 계약을 포함하고 있습니다.
+이 프로젝트는 Klaytn 블록체인에서 메시지를 저장하고 검증할 수 있는 스마트 계약을 포함하고 있습니다.
+- 스마트 계약 배포는 편의상 Remix IDE를 사용합니다.
+- 배포된 계약에 대한 테스트는 node.js를 통해 수행합니다.
 
 ## 목차
 
@@ -40,14 +42,14 @@
     ADDRESS=YOUR_ADDRESS
     ```
 
-## 배포
+## 스마트 계약 배포
 
-1. [Remix IDE](https://remix.ethereum.org/)에서 `MessageStoreAndVerify.sol` 파일을 엽니다.
+1. [Remix IDE](https://remix.ethereum.org/)에서 [MessageStoreAndVerify.sol](contracts/MessageStoreAndVerify.sol) 파일을 엽니다.
 2. Solidity 컴파일러를 사용하여 계약을 컴파일합니다.
 3. Remix에서 적절한 환경(예: MetaMask를 통한 Injected Web3 사용)을 설정하여 Klaytn 네트워크에 계약을 배포합니다.
 4. 배포된 계약 주소와 ABI를 저장합니다:
-   - 계약 주소를 복사하여 `deployed` 디렉토리에 `Address.txt` 파일에 붙여넣습니다.
-   - Remix에서 계약 ABI를 복사하여 `deployed` 디렉토리에 `ABI.json` 파일에 붙여넣습니다.
+   - 계약 주소를 복사하여 `deployed` 디렉토리에 `Address.txt` 파일에 붙여넣습니다. (없으면 생성)
+   - Remix에서 계약 ABI를 복사하여 `deployed` 디렉토리에 `ABI.json` 파일에 붙여넣습니다. (없으면 생성)
 
 ## 테스트
 
