@@ -1,122 +1,80 @@
-# MessageStoreAndVerify 스마트 계약
+# 클레이튼(Klaytn) 메시지 저장 및 검증 스마트 컨트랙트 개발
 
-이 스마트 계약은 메시지와 비밀번호, 블록 해시를 사용하여 메시지를 설정하고 검증할 수 있도록 합니다. 아래 절차에 따라 Remix를 통해 스마트 계약을 배포할 수 있습니다.
+이 프로젝트는 Klaytn 블록체인에서 비밀번호와 블록 해시를 사용하여 메시지를 저장하고 검증할 수 있는 스마트 계약을 포함하고 있습니다.
 
-## 요구사항
+## 목차
 
-- 웹 브라우저 (Google Chrome, Firefox 등)
-- 인터넷 연결
+- [사전 준비](#사전-준비)
+- [시작하기](#시작하기)
+- [배포](#배포)
+- [테스트](#테스트)
+   - [스트레스 테스트](#스트레스-테스트)
+   - [검증](#검증)
+- [라이선스](#라이선스)
 
-## 배포 절차
+## 사전 준비
 
-1. **Remix IDE 접속**
+시작하기 전에 다음 요구 사항을 충족하는지 확인하십시오:
 
-   웹 브라우저를 열고 [Remix IDE](https://remix.ethereum.org/)에 접속합니다.
+- 로컬 머신에 Node.js와 npm이 설치되어 있어야 합니다.
+- Klaytn 계정과 Klaytn 엔드포인트에 접근할 수 있어야 합니다.
+- 스마트 계약 배포를 위해 [Remix IDE](https://remix.ethereum.org/)를 사용하십시오.
 
-2. **새 파일 생성**
+## 시작하기
 
-   좌측 파일 탐색기에서 `contracts` 폴더를 선택한 후, `contracts` 폴더 내에 `MessageStoreAndVerify.sol`이라는 새 파일을 생성합니다.
+1. 레포지토리를 클론합니다:
+    ```sh
+    git clone https://github.com/realcoding2003/klay-SC-storeVerifyData.git
+    cd klay-SC-storeVerifyData
+    ```
 
-3. **스마트 계약 코드 복사**
+2. 의존성을 설치합니다:
+    ```sh
+    npm install
+    ```
 
-   아래 코드를 새로 생성한 `MessageStoreAndVerify.sol` 파일에 복사합니다:
+3. 루트 디렉토리에 `.env` 파일을 생성하고, Klaytn 엔드포인트, 개인 키, 주소를 추가합니다:
+    ```env
+    RPC_URL=YOUR_KLAYTN_ENDPOINT
+    PRIVATE_KEY=YOUR_PRIVATE_KEY
+    ADDRESS=YOUR_ADDRESS
+    ```
 
-   ```solidity
-   // SPDX-License-Identifier: MIT
-   pragma solidity ^0.8.18;
+## 배포
 
-   /**
-    * @title MessageStoreAndVerify
-    * @dev 이 계약은 메시지와 비밀번호, 블록 해시를 사용하여 메시지를 설정하고 검증할 수 있도록 합니다.
-    */
-   contract MessageStoreAndVerify {
-       /// @notice 사용자가 설정한 원본 메시지입니다.
-       string public message;
+1. [Remix IDE](https://remix.ethereum.org/)에서 `MessageStoreAndVerify.sol` 파일을 엽니다.
+2. Solidity 컴파일러를 사용하여 계약을 컴파일합니다.
+3. Remix에서 적절한 환경(예: MetaMask를 통한 Injected Web3 사용)을 설정하여 Klaytn 네트워크에 계약을 배포합니다.
+4. 배포된 계약 주소와 ABI를 저장합니다:
+   - 계약 주소를 복사하여 `deployed` 디렉토리에 `Address.txt` 파일에 붙여넣습니다.
+   - Remix에서 계약 ABI를 복사하여 `deployed` 디렉토리에 `ABI.json` 파일에 붙여넣습니다.
 
-       /// @notice 메시지, 비밀번호, 블록 해시를 결합한 해시된 메시지입니다.
-       bytes32 public hashedMessage;
+## 테스트
 
-       /// @notice 메시지가 설정된 블록 번호입니다.
-       uint256 public blockNumber;
+### 스트레스 테스트
 
-       /// @notice 새로운 메시지가 설정될 때 발생하는 이벤트입니다.
-       /// @param message 원본 메시지입니다.
-       /// @param hashedMessage 해시된 메시지입니다.
-       /// @param blockNumber 메시지가 설정된 블록 번호입니다.
-       /// @param blockHash 블록의 해시 값입니다.
-       event MessageSet(string message, bytes32 hashedMessage, uint256 blockNumber, bytes32 blockHash);
+해시를 연속적으로 저장하여 스트레스 테스트를 수행하려면:
 
-       /**
-        * @notice 비밀번호와 함께 새로운 메시지를 설정합니다.
-        * @param _message 설정할 메시지입니다.
-        * @param _password 메시지를 해시하는 데 사용되는 비밀번호입니다.
-        */
-       function setMessage(string memory _message, string memory _password) public {
-           message = _message;
-           blockNumber = block.number;
-           bytes32 blockHash = blockhash(blockNumber - 1);
-           hashedMessage = keccak256(abi.encodePacked(_message, _password, blockHash));
-           emit MessageSet(_message, hashedMessage, blockNumber, blockHash);
-       }
+1. `deployed` 디렉토리에 `Address.txt`와 `ABI.json` 파일이 올바르게 채워져 있는지 확인합니다.
+2. 스트레스 테스트 스크립트를 실행합니다:
+    ```sh
+    npm run stress test
+    ```
 
-       /**
-        * @notice 현재 메시지를 반환합니다.
-        * @return 현재 메시지입니다.
-        */
-       function getMessage() public view returns (string memory) {
-           return message;
-       }
+### 검증
 
-       /**
-        * @notice 현재 해시된 메시지를 반환합니다.
-        * @return 현재 해시된 메시지입니다.
-        */
-       function getHashedMessage() public view returns (bytes32) {
-           return hashedMessage;
-       }
+저장된 해시를 검증하려면:
 
-       /**
-        * @notice 메시지가 설정된 블록 번호를 반환합니다.
-        * @return 블록 번호입니다.
-        */
-       function getBlockNumber() public view returns (uint256) {
-           return blockNumber;
-       }
+1. `deployed` 디렉토리에 `Address.txt`와 `ABI.json` 파일이 올바르게 채워져 있는지 확인합니다.
+2. 검증 스크립트를 실행합니다:
+    ```sh
+    npm run verify
+    ```
 
-       /**
-        * @notice 주어진 메시지, 비밀번호, 블록 번호 및 블록 해시를 사용하여 메시지를 검증합니다.
-        * @param _message 검증할 원본 메시지입니다.
-        * @param _password 메시지를 해시하는 데 사용되는 비밀번호입니다.
-        * @param _blockNumber 메시지가 설정된 블록 번호입니다.
-        * @param _blockHash 블록의 해시 값입니다.
-        * @return 메시지가 검증되면 true, 그렇지 않으면 false를 반환합니다.
-        */
-       function verifyMessage(
-           string memory _message,
-           string memory _password,
-           uint256 _blockNumber,
-           bytes32 _blockHash
-       ) public view returns (bool) {
-           require(_blockNumber == blockNumber, "블록 번호가 일치하지 않습니다.");
-           return keccak256(abi.encodePacked(_message, _password, _blockHash)) == hashedMessage;
-       }
-   }
-   ```
+이 스크립트는 다음을 수행합니다:
+- 샘플 메시지와 키에 대한 해시를 저장합니다.
+- 블록체인에서 해시를 가져와서 검증합니다.
 
-4. **컴파일**
+## 라이선스
 
-   좌측 메뉴에서 "Solidity Compiler" 탭을 선택한 후, "Compile MessageStoreAndVerify.sol" 버튼을 클릭하여 계약을 컴파일합니다. 컴파일러 버전은 Solidity `0.8.18`을 선택합니다.
-
-5. **배포**
-
-    1. 좌측 메뉴에서 "Deploy & Run Transactions" 탭을 선택합니다.
-    2. "ENVIRONMENT"에서 "Injected Web3"를 선택하여 MetaMask와 같은 웹3 지갑을 연결합니다.
-    3. "CONTRACT" 드롭다운에서 `MessageStoreAndVerify`를 선택합니다.
-    4. "Deploy" 버튼을 클릭하여 스마트 계약을 배포합니다.
-    5. MetaMask 팝업이 나타나면 트랜잭션을 확인하고 배포를 완료합니다.
-
-6. **스마트 계약 상호작용**
-
-배포가 완료되면 "Deployed Contracts" 섹션에서 배포된 계약을 찾을 수 있습니다. 해당 계약을 클릭하여 `setMessage`, `getMessage`, `getHashedMessage`, `getBlockNumber`, `verifyMessage` 함수와 상호작용할 수 있습니다.
-
-이로써 `MessageStoreAndVerify` 스마트 계약을 Remix를 통해 성공적으로 배포할 수 있습니다.
+이 프로젝트는 MIT 라이선스에 따라 라이선스가 부여됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하십시오.
